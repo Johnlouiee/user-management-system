@@ -56,6 +56,9 @@ npm install nodemailer
 ### This is where i open the mailbox then see the notifcation andd receive the token
 ![image](https://github.com/Johnlouiee/user-management-system/blob/e9806c4b40275bfc1958e58a7ae470be47b9e5c9/pictures/pastetoken.jpg)
 ### This is where i paste the token in the verify-email then it was successful
+![image](https://github.com/Johnlouiee/user-management-system/blob/b30cf22934be7f29867250f49e1c0565c7dc9228/pictures/authenticate.jpg)
+### This is where the authentication then my password is not from the ethereal because when i registerd my password is 1234567 thats why when i type the password on the ethereal which is XXAGuW8RRgGdX1k2Kn it says incorrect thats why
+
 
 
 
