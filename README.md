@@ -15,7 +15,7 @@
  # npm install express swagger-ui-express yamljs
 
  2. Creating js files
-![Layout](pictures/files.jpg)
+![image alt](https://github.com/Johnlouiee/user-management-system/blob/8c6d4dd2bfc211bd26f4c642c335d34bc58da2fa/dbjs.jpg)
 
 
 
