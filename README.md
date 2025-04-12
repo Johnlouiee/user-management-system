@@ -10,14 +10,12 @@
 
 
 
- # 1.  Installment
-  npm install
-  npm install express swagger-ui-express yamljs
- npm install sequelize mysql2
-  npm install express-jwt jsonwebtoken bcryptjs nodemailer joi cors cookie-parser body-parser
+ 1.  Installment
+ # npm install
+ # npm install express swagger-ui-express yamljs
 
- # 2. Creating js files
-![image alt](https://github.com/Johnlouiee/user-management-system/blob/8c6d4dd2bfc211bd26f4c642c335d34bc58da2fa/dbjs.jpg)
+ 2. Creating js files
+![Layout](pictures/files.jpg)
 
 
 
