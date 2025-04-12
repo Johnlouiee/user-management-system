@@ -1,4 +1,4 @@
-const config = require('./config.json');
+const config = require('../config.json');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
@@ -91,13 +91,19 @@ async function register(params, origin) {
     await sendVerificationEmail(account, origin);
 }
 async function verifyEmail(token) {
+    console.log('Verifying token:', token);
     const account = await db.Account.findOne({ where: { verificationToken: token } });
+    console.log('Found account:', account ? account.id : 'not found');
 
-    if (!account) throw 'Verification failed';
+    if (!account) {
+        console.log('Verification failed - account not found');
+        throw 'Verification failed';
+    }
 
     account.verified = Date.now();
     account.verificationToken = null;
     await account.save();
+    console.log('Account verified successfully');
 }
 
 async function forgotPassword(email, origin) {

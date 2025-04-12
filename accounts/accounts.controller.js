@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Joi = require('joi');
-const validateRequest = require('_middleware/validate-request');
-const authorize = require('_middleware/authorize');
-const Role = require('_helpers/role');
+const validateRequest = require('../_middleware/validate-request');
+const authorize = require('../_middleware/authorize');
+const Role = require('../_helpers/role');
 const accountService = require('./account.service');
+const config = require('../config.json');
 
 // routes
 router.post('/authenticate', authenticateSchema, authenticate);
@@ -94,13 +95,15 @@ function register(req, res, next) {
 }
 
 function verifyEmailSchema(req, res, next) {
+    console.log('Validating verify email request body:', req.body);
     const schema = Joi.object({
         token: Joi.string().required()
     });
     validateRequest(req, next, schema);
 }
 function verifyEmail(req, res, next) {
-    accountService.verifyEmail(req.body)
+    console.log('Processing verify email request with token:', req.body.token);
+    accountService.verifyEmail(req.body.token)
         .then(() => res.json({ message: 'Verification successful, you can now login' }))
         .catch(next);
 }
