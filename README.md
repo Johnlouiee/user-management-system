@@ -1,5 +1,6 @@
 # user-management-system
 
+# ROLES
 # backend-signup-auth -PURISIMA
 # backend-authorization-crud - MORALES
 # frontend-signup-auth -RIZADA
@@ -8,7 +9,15 @@
 # tester-security-testing -PURISIMA
 
 
- 
+
+ 1.  Installment
+ # npm install
+ # npm install express swagger-ui-express yamljs
+
+ 2. Creating js files
+![Layout](pictures/files.jpg)
+
+
 
 
 
