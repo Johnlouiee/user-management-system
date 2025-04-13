@@ -10,6 +10,7 @@
 
 
 # BACKEND -SIGNUP-AUTH
+# DEVELOPER 1 - PURISIMA
  # 1.  Installment
  npm install
  npm install express swagger-ui-express yamljs
@@ -58,6 +59,26 @@ npm install nodemailer
 ### This is where i paste the token in the verify-email then it was successful
 ![image](https://github.com/Johnlouiee/user-management-system/blob/b30cf22934be7f29867250f49e1c0565c7dc9228/pictures/authenticate.jpg)
 ### This is where the authentication then my password is not from the ethereal because when i registerd my password is 1234567 thats why when i type the password on the ethereal which is XXAGuW8RRgGdX1k2Kn it says incorrect thats why
+
+# backend-authorization-crud
+# Developer 2 - MORALES
+
+1. thunder client
+![image](https://github.com/Johnlouiee/user-management-system/blob/baadc97cd3f9e3345fb7ceb10757c5e4a9935dab/backend/pictures/forgot-password.png)
+### This is where i post forgot-password
+![image](https://github.com/Johnlouiee/user-management-system/blob/baadc97cd3f9e3345fb7ceb10757c5e4a9935dab/backend/pictures/reset-password.png)
+### This is where i post  reset-password
+![image](https://github.com/Johnlouiee/user-management-system/blob/baadc97cd3f9e3345fb7ceb10757c5e4a9935dab/backend/pictures/authenticata%20again.png)
+### I authenticate again to see the jwToken
+![image](https://github.com/Johnlouiee/user-management-system/blob/baadc97cd3f9e3345fb7ceb10757c5e4a9935dab/backend/pictures/part%202%20authenticate.png)
+### refresh cookie 
+![image](https://github.com/Johnlouiee/user-management-system/blob/baadc97cd3f9e3345fb7ceb10757c5e4a9935dab/backend/pictures/account%20id.png)
+### getting users by ID
+![image](https://github.com/Johnlouiee/user-management-system/blob/baadc97cd3f9e3345fb7ceb10757c5e4a9935dab/backend/pictures/refresh%20token%20generate.png)
+### This is where you see your referesh tokenn
+
+
+
 
 
 
