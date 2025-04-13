@@ -1,7 +1,7 @@
 <h2>Sign Up</h2>
-<form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+<form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
   <input formControlName="email" placeholder="Email" />
   <input type="password" formControlName="password" placeholder="Password" />
   <button type="submit">Sign Up</button>
 </form>
-<p *ngIf="success">{{ success }}</p>
+<p *ngIf="success" class="success-message">{{ success }}</p>
