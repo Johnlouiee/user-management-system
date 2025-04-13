@@ -59,6 +59,8 @@ npm install nodemailer
 ### This is where i paste the token in the verify-email then it was successful
 ![image](https://github.com/Johnlouiee/user-management-system/blob/b30cf22934be7f29867250f49e1c0565c7dc9228/pictures/authenticate.jpg)
 ### This is where the authentication then my password is not from the ethereal because when i registerd my password is 1234567 thats why when i type the password on the ethereal which is XXAGuW8RRgGdX1k2Kn it says incorrect thats why
+![image](https://github.com/Johnlouiee/user-management-system/blob/d6df398ff38c14d749ec32721f4925aa47d044d8/backend/pictures/autheticate%20headers%20purisima.jpg)
+### refresh token cookie
 
 # backend-authorization-crud
 # Developer 2 - MORALES
@@ -72,6 +74,8 @@ npm install nodemailer
 ### I authenticate again to see the jwToken
 ![image](https://github.com/Johnlouiee/user-management-system/blob/baadc97cd3f9e3345fb7ceb10757c5e4a9935dab/backend/pictures/part%202%20authenticate.png)
 ### refresh cookie 
+![image](https://github.com/Johnlouiee/user-management-system/blob/d6df398ff38c14d749ec32721f4925aa47d044d8/backend/pictures/update%20user.png)
+### This is where you update account with Postman
 ![image](https://github.com/Johnlouiee/user-management-system/blob/baadc97cd3f9e3345fb7ceb10757c5e4a9935dab/backend/pictures/account%20id.png)
 ### getting users by ID
 ![image](https://github.com/Johnlouiee/user-management-system/blob/baadc97cd3f9e3345fb7ceb10757c5e4a9935dab/backend/pictures/refresh%20token%20generate.png)
