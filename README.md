@@ -5,6 +5,6 @@
 # backend-authorization-crud - MORALES
 # frontend-signup-auth -RIZADA
 # frontend-profile-admin-fake-backend -SINGCO
-# tester-functional-testing -SINGCO
+# tester-functional-testing -MORALES
 # tester-security-testing -PURISIMA
 
