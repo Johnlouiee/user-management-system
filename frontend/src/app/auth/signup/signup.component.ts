@@ -6,7 +6,8 @@ import { CommonModule } from '@angular/common';
   selector: 'app-signup',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule], // ✅ Add this
-  templateUrl: './signup.component.html'
+  templateUrl: './signup.component.html',
+  styleUrls: ['./signup.component.css'] 
 })
 export class SignupComponent {
   signupForm: FormGroup;
