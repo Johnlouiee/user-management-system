@@ -62,6 +62,7 @@ npm install nodemailer
 ![image](https://github.com/Johnlouiee/user-management-system/blob/d6df398ff38c14d749ec32721f4925aa47d044d8/backend/pictures/autheticate%20headers%20purisima.jpg)
 ### refresh token cookie
 
+
 # backend-authorization-crud
 # Developer 2 - MORALES
 
@@ -80,6 +81,10 @@ npm install nodemailer
 ### getting users by ID
 ![image](https://github.com/Johnlouiee/user-management-system/blob/baadc97cd3f9e3345fb7ceb10757c5e4a9935dab/backend/pictures/refresh%20token%20generate.png)
 ### This is where you see your referesh tokenn
+![image](https://github.com/Johnlouiee/user-management-system/blob/477ca0cabbb58b623a9cb16082b4900fd9f959d5/backend/pictures/pr%20for%20justin.png)
+### PR to merge main
+![image](https://github.com/Johnlouiee/user-management-system/blob/477ca0cabbb58b623a9cb16082b4900fd9f959d5/backend/pictures/done%20merging%20dev2.jpg)
+### DOne merging dev2
 
 
 
