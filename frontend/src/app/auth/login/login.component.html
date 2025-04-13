@@ -1,7 +1,9 @@
 <h2>Login</h2>
-<form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
   <input formControlName="email" placeholder="Email" />
   <input type="password" formControlName="password" placeholder="Password" />
   <button type="submit">Login</button>
 </form>
-<p>{{ message }}</p>
+<p class="message">{{ message }}</p>
+
+
