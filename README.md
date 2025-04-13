@@ -61,6 +61,8 @@ npm install nodemailer
 ### This is where the authentication then my password is not from the ethereal because when i registerd my password is 1234567 thats why when i type the password on the ethereal which is XXAGuW8RRgGdX1k2Kn it says incorrect thats why
 ![image](https://github.com/Johnlouiee/user-management-system/blob/d6df398ff38c14d749ec32721f4925aa47d044d8/backend/pictures/autheticate%20headers%20purisima.jpg)
 ### refresh token cookie
+![image](https://github.com/Johnlouiee/user-management-system/blob/fcfafd95e40e6a11c4dfb09fe42f97e4beceb1be/backend/pictures/merged%20dev%201.jpg)
+### Merged dev 1
 
 
 # backend-authorization-crud
