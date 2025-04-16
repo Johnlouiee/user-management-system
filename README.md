@@ -18,4 +18,6 @@
 ### Routes
 ![image](https://github.com/Johnlouiee/user-management-system/blob/a548c1894f67ecc6111a093fb377e3c4ce46cf62/frontend/picture2/signup-component.png)
 ### Sign up
+![image](https://github.com/Johnlouiee/user-management-system/blob/b2c2e942e17ef049333d7287edab17775b259fac/frontend/picture2/all%20structure%20for%20frontend.jpg)
+### All structured code has admin and account
 
