@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { VerifyComponent } from './verify.component';
+import 'jasmine';
 
 describe('VerifyComponent', () => {
   let component: VerifyComponent;

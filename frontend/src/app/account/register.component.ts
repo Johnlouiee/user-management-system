@@ -1,14 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { first } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
 
-import { AccountService, AlertService } from '@app/_services';
-import { MustMatch } from '@app/_helpers';
+import { AccountService } from '../_services/account.service';
+import { AlertService } from '../_services/alert.service';
+import { MustMatch } from '../_helpers/must-match.validator';
 
-@Component({ templateUrl: 'register.component.html' })
+@Component({ 
+    templateUrl: 'register.component.html',
+    standalone: true,
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule
+    ]
+})
 export class RegisterComponent implements OnInit {
-    form: UntypedFormGroup;
+    form!: UntypedFormGroup;
     loading = false;
     submitted = false;
 

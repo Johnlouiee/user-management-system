@@ -1,16 +1,28 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { first } from 'rxjs/operators';
+import { AccountService } from '../../_services/account.service';
+import { AlertService } from '../../_services/alert.service';
+import { MustMatch } from '../../_helpers/must-match.validator';
 
-import { AccountService, AlertService } from '@app/_services';
-import { MustMatch } from '@app/_helpers';
-
-@Component({ templateUrl: 'add-edit.component.html' })
+@Component({
+    selector: 'app-add-edit',
+    standalone: true,
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        RouterModule
+    ],
+    templateUrl: './add-edit.component.html'
+})
 export class AddEditComponent implements OnInit {
     form: UntypedFormGroup;
-    id: string;
-    isAddMode: boolean;
+    id: string = '';
+    isAddMode: boolean = false;
     loading = false;
     submitted = false;
 
@@ -45,20 +57,14 @@ export class AddEditComponent implements OnInit {
         }
     }
 
-    // convenience getter for easy access to form fields
     get f() { return this.form.controls; }
 
     onSubmit() {
         this.submitted = true;
-
-        // reset alerts on submit
         this.alertService.clear();
-
-        // stop here if form is invalid
         if (this.form.invalid) {
             return;
         }
-
         this.loading = true;
         if (this.isAddMode) {
             this.createAccount();
