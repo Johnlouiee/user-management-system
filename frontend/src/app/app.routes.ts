@@ -4,12 +4,14 @@ import { SignupComponent } from './auth/signup/signup.component';
 import { LoginComponent } from './auth/login/login.component';
 import { VerifyComponent } from './auth/verify/verify.component';
 
-
-
 export const routes: Routes = [
   { path: 'signup', component: SignupComponent },
   { path: 'login', component: LoginComponent },
   { path: 'verify', component: VerifyComponent },
+  { 
+    path: 'profile',
+    loadChildren: () => import('./profile/profile.module').then(m => m.ProfileModule)
+  },
   { path: '', redirectTo: '/login', pathMatch: 'full' }
 ];
 

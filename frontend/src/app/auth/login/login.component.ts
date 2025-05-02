@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router'; // Import Router
+import { Router } from '@angular/router';
+import { AuthService } from '../../_services/auth.service';
+import { AlertService } from '../../_services/alert.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -12,26 +15,51 @@ import { Router } from '@angular/router'; // Import Router
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  message: string = '';
+  loading = false;
+  submitted = false;
+  errorMessage: string = '';
 
-  // Inject the Router service into the constructor
-  constructor(private fb: FormBuilder, private router: Router) { 
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService,
+    private alertService: AlertService
+  ) { 
     this.loginForm = this.fb.group({
-      email: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
   }
 
+  // convenience getter for easy access to form fields
+  get f() { return this.loginForm.controls; }
+
   onSubmit() {
-    if (this.loginForm.valid) {
-      this.message = `Login Successful: ${JSON.stringify(this.loginForm.value)}`;
-    } else {
-      this.message = 'Form is invalid!';
+    this.submitted = true;
+    this.errorMessage = '';
+
+    // reset alerts on submit
+    this.alertService.clear();
+
+    // stop here if form is invalid
+    if (this.loginForm.invalid) {
+      return;
     }
+
+    this.loading = true;
+    this.authService.login(this.f['email'].value, this.f['password'].value)
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/profile']);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.loading = false;
+          this.errorMessage = error.error.message || 'An error occurred during login';
+        }
+      });
   }
 
-  // Method to navigate to the Sign Up page
   navigateToSignUp() {
-    this.router.navigate(['/sign-up']); // Now it uses the injected router
+    this.router.navigate(['/signup']);
   }
 }

@@ -1,85 +1,158 @@
 /* Centering the form */
+.login-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
 .login-form {
-    max-width: 400px;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  /* Headline */
-  h2 {
-    text-align: center;
-    font-size: 24px;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  /* Input styling */
-  .login-form input {
-    padding: 12px 15px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    font-size: 16px;
-    transition: border 0.3s ease;
-  }
-  
-  .login-form input:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
-  }
-  
-  /* Button styling */
-  .login-form button {
-    background-color: #007bff;
-    color: white;
-    padding: 12px;
-    font-size: 16px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .login-form button:hover {
-    background-color: #0056b3;
-  }
-  
-  /* Message styling */
-  .message {
-    text-align: center;
-    margin-top: 10px;
-    color: #e63946;
-    font-size: 14px;
-  }
-  
-  /* Add this CSS to your login.component.css file */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+input.is-invalid {
+  border-color: #dc3545;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 14px;
+}
+
+button {
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.alert {
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.resend-link {
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.signup-link {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.signup-link a {
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.signup-link a:hover {
+  text-decoration: underline;
+}
+
+/* Headline */
+h2 {
+  text-align: center;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Input styling */
+.login-form input {
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: border 0.3s ease;
+}
+
+.login-form input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+/* Button styling */
+.login-form button {
+  background-color: #007bff;
+  color: white;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-form button:hover {
+  background-color: #0056b3;
+}
+
+/* Message styling */
+.message {
+  text-align: center;
+  margin-top: 10px;
+  color: #e63946;
+  font-size: 14px;
+}
+
+/* Add this CSS to your login.component.css file */
 .signup-container {
-    text-align: center;
-    margin-top: 20px;
-  }
-  
-  .signup-container p {
-    margin-bottom: 10px;
-  }
-  
-  .signup-container button {
-    background-color: #28a745; /* Green button */
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .signup-container button:hover {
-    background-color: #218838; /* Darker green on hover */
-  }
+  text-align: center;
+  margin-top: 20px;
+}
+
+.signup-container p {
+  margin-bottom: 10px;
+}
+
+.signup-container button {
+  background-color: #28a745; /* Green button */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.signup-container button:hover {
+  background-color: #218838; /* Darker green on hover */
+}
   

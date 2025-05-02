@@ -33,43 +33,49 @@
     <div class="form-row">
         <div class="form-group col-7">
             <label>Email</label>
-            <input type="text" formControlName="email" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
-            <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
+            <input type="text" formControlName="email" class="form-control" 
+                [ngClass]="{ 'is-invalid': (submitted || f.email.touched) && f.email.errors }" />
+            <div *ngIf="(submitted || f.email.touched) && f.email.errors" class="invalid-feedback">
                 <div *ngIf="f.email.errors.required">Email is required</div>
                 <div *ngIf="f.email.errors.email">Email must be a valid email address</div>
+                <div *ngIf="f.email.errors.serverError">{{ f.email.errors.serverError }}</div>
             </div>
         </div>
         <div class="form-group col">
             <label>Role</label>
-            <select formControlName="role" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.role.errors }">
+            <select formControlName="role" class="form-control" 
+                [ngClass]="{ 'is-invalid': (submitted || f.role.touched) && f.role.errors }">
                 <option value=""></option>
                 <option value="User">User</option>
                 <option value="Admin">Admin</option>
             </select>
-            <div *ngIf="submitted && f.role.errors" class="invalid-feedback">
+            <div *ngIf="(submitted || f.role.touched) && f.role.errors" class="invalid-feedback">
                 <div *ngIf="f.role.errors.required">Role is required</div>
+                <div *ngIf="f.role.errors.serverError">{{ f.role.errors.serverError }}</div>
             </div>
         </div>
     </div>
     <div *ngIf="!isAddMode">
         <h3 class="pt-3">Change Password</h3>
         <p>Leave blank to keep the same password</p>
-    </div>
-    <div class="form-row">
-        <div class="form-group col">
-            <label>Password</label>
-            <input type="password" formControlName="password" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.password.errors }" />
-            <div *ngIf="submitted && f.password.errors" class="invalid-feedback">
-                <div *ngIf="f.password.errors.required">Password is required</div>
-                <div *ngIf="f.password.errors.minlength">Password must be at least 6 characters</div>
+        <div class="form-row">
+            <div class="form-group col">
+                <label>Password</label>
+                <input type="password" formControlName="password" class="form-control" 
+                    [ngClass]="{ 'is-invalid': (submitted || f.password.touched) && f.password.errors }" />
+                <div *ngIf="(submitted || f.password.touched) && f.password.errors" class="invalid-feedback">
+                    <div *ngIf="f.password.errors.minlength">Password must be at least 6 characters</div>
+                    <div *ngIf="f.password.errors.serverError">{{ f.password.errors.serverError }}</div>
+                </div>
             </div>
-        </div>
-        <div class="form-group col">
-            <label>Confirm Password</label>
-            <input type="password" formControlName="confirmPassword" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.confirmPassword.errors }" />
-            <div *ngIf="submitted && f.confirmPassword.errors" class="invalid-feedback">
-                <div *ngIf="f.confirmPassword.errors.required">Confirm Password is required</div>
-                <div *ngIf="f.confirmPassword.errors.mustMatch">Passwords must match</div>
+            <div class="form-group col">
+                <label>Confirm Password</label>
+                <input type="password" formControlName="confirmPassword" class="form-control" 
+                    [ngClass]="{ 'is-invalid': (submitted || f.confirmPassword.touched) && f.confirmPassword.errors }" />
+                <div *ngIf="(submitted || f.confirmPassword.touched) && f.confirmPassword.errors" class="invalid-feedback">
+                    <div *ngIf="f.confirmPassword.errors.mustMatch">Passwords must match</div>
+                    <div *ngIf="f.confirmPassword.errors.serverError">{{ f.confirmPassword.errors.serverError }}</div>
+                </div>
             </div>
         </div>
     </div>
