@@ -1,12 +1,22 @@
 <h3 class="card-header">Login</h3>
 <div class="card-body">
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="alert alert-success" role="alert">
+        {{ successMessage }}
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+        {{ errorMessage }}
+    </div>
+
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <div class="form-group">
             <label>Email</label>
-            <input type="email" formControlName="email" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
+            <input type="text" formControlName="email" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
             <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
                 <div *ngIf="f.email.errors.required">Email is required</div>
-                <div *ngIf="f.email.errors.email">Email is invalid</div>
+                <div *ngIf="f.email.errors.email">Email must be a valid email address</div>
             </div>
         </div>
         <div class="form-group">

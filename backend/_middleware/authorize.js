@@ -1,6 +1,6 @@
 const { expressjwt: jwt } = require('express-jwt');
 const { secret } = require('../config.json');
-const db = require('../_helpers/db');
+const db = require('../config/database');
 
 module.exports = authorize;
 
@@ -29,7 +29,8 @@ function authorize(roles = []) {
 
         // authorize based on user role
         async (req, res, next) => {
-            const account = await db.Account.findByPk(req.auth.id);
+            const [accounts] = await db.query('SELECT * FROM accounts WHERE id = ?', [req.auth.id]);
+            const account = accounts[0];
 
             if (!account || (roles.length && !roles.includes(account.role))) {
                 // account no longer exists or role not authorized
@@ -41,8 +42,11 @@ function authorize(roles = []) {
                 id: account.id,
                 role: account.role
             };
-            const refreshTokens = await account.getRefreshTokens();
-            req.user.ownsToken = token => !!refreshTokens.find(x => x.token === token);
+            // Helper to check if user owns a refresh token
+            req.user.ownsToken = async (token) => {
+                const [tokens] = await db.query('SELECT * FROM refreshTokens WHERE accountId = ? AND token = ?', [account.id, token]);
+                return tokens.length > 0;
+            };
 
             next();
         }

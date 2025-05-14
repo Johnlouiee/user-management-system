@@ -10,6 +10,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { JwtInterceptor, ErrorInterceptor, appInitializer } from './_helpers';
 import { AccountService } from './_services/account.service';
 import { AppComponent } from './app.component';
+import { AdminComponent } from './admin/admin.component';
 
 @NgModule({
     imports: [

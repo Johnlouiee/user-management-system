@@ -1,0 +1,16 @@
+<nav class="navbar navbar-expand navbar-dark bg-dark">
+    <div class="container">
+        <span class="navbar-brand">User Management System</span>
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" routerLink="/home" routerLinkActive="active" *ngIf="accountService.accountValue">Home</a>
+            <a class="nav-item nav-link" routerLink="/dashboard" routerLinkActive="active" *ngIf="accountService.accountValue?.role === 'admin'">Dashboard</a>
+            <a class="nav-item nav-link" routerLink="/account/login" *ngIf="!accountService.accountValue">Login</a>
+            <a class="nav-item nav-link" routerLink="/account/register" *ngIf="!accountService.accountValue">Register</a>
+            <a class="nav-item nav-link" (click)="logout()" style="cursor: pointer;" *ngIf="accountService.accountValue">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <router-outlet></router-outlet>
+</div> 

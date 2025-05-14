@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { UntypedFormBuilder, UntypedFormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { first } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
@@ -13,13 +13,16 @@ import { AlertService } from '../_services/alert.service';
     imports: [
         CommonModule,
         FormsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        RouterModule
     ]
 })
 export class LoginComponent implements OnInit {
     form!: UntypedFormGroup;
     loading = false;
     submitted = false;
+    successMessage: string = '';
+    errorMessage: string = '';
 
     constructor(
         private formBuilder: UntypedFormBuilder,
@@ -41,27 +44,45 @@ export class LoginComponent implements OnInit {
 
     onSubmit() {
         this.submitted = true;
+        this.successMessage = '';
+        this.errorMessage = '';
         
         // reset alerts on submit
         this.alertService.clear();
         
         // stop here if form is invalid
         if (this.form.invalid) {
+            console.log('Form is invalid:', this.form.errors);
+            this.errorMessage = 'Please fill in all required fields correctly.';
             return;
         }
         
         this.loading = true;
+        console.log('Attempting login with email:', this.f.email.value);
+        
         this.accountService.login(this.f.email.value, this.f.password.value)
             .pipe(first())
             .subscribe({
-                next: () => {
-                    // get return url from query parameters or default to home page
-                    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-                    this.router.navigateByUrl(returnUrl);
+                next: (response) => {
+                    console.log('Login successful. Response:', response);
+                    this.successMessage = 'Login successful!';
+                    window.location.href = 'http://localhost:4200/home';
                 },
                 error: error => {
-                    this.alertService.error(error);
+                    console.error('Login error details:', {
+                        error: error,
+                        errorMessage: error.message,
+                        errorResponse: error.error
+                    });
                     this.loading = false;
+                    if (error.error && error.error.message) {
+                        this.errorMessage = error.error.message;
+                    } else if (error.message) {
+                        this.errorMessage = error.message;
+                    } else {
+                        this.errorMessage = 'Login failed. Please check your credentials.';
+                    }
+                    this.alertService.error(this.errorMessage);
                 }
             });
     }

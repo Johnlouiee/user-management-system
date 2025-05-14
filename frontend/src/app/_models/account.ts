@@ -1,12 +1,10 @@
 import { Role } from './role';
 
-export class Account {
-    id: string = '';
-    title: string = '';
-    firstName: string = '';
-    lastName: string = '';
-    email: string = '';
-    role: Role = Role.User;
+export interface Account {
+    id: string;
+    username: string;
+    email: string;
+    role: Role;
+    is_active: boolean;
     jwtToken?: string;
-    isDeleting?: boolean;
 }

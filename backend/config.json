@@ -4,7 +4,7 @@
       "port": 3306,
       "user": "root",
       "password": "",
-      "database": "node-mysql-signup-verification-api"
+      "database": "user_management_db"
     },
     "secret": "758094c5-9763-4e3f-8ee7-7f499dfcfc29",
     "baseUrl": "http://localhost:4000",

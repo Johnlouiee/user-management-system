@@ -16,13 +16,14 @@ router.post('/verify-email', verifyEmailSchema, verifyEmail);
 router.post('/forgot-password', forgotPasswordSchema, forgotPassword);
 router.post('/validate-reset-token', validateResetTokenSchema, validateResetToken);
 router.post('/reset-password', resetPasswordSchema, resetPassword);
-router.get('/', authorize(Role.Admin), getAll);
+router.get('/', authorize(), getAll);
 router.get('/:id', authorize(), getById);
 router.post('/', authorize(Role.Admin), createSchema, create);
 router.put('/:id', authorize(), updateSchema, update);
 router.delete('/:id', authorize(), _delete);
 
 module.exports = router;
+
 function authenticateSchema(req, res, next) {
     const schema = Joi.object({
         email: Joi.string().email().required(),
@@ -32,13 +33,8 @@ function authenticateSchema(req, res, next) {
 }
 
 function authenticate(req, res, next) {
-    const { email, password } = req.body;
-    const ipAddress = req.ip;
-    accountService.authenticate({ email, password, ipAddress })
-        .then(({ refreshToken, ...account }) => {
-            setTokenCookie(res, refreshToken);
-            res.json(account);
-        })
+    accountService.authenticate(req.body)
+        .then(user => res.json(user))
         .catch(next);
 }
 
@@ -52,6 +48,7 @@ function refreshToken(req, res, next) {
         })
         .catch(next);
 }
+
 function revokeTokenSchema(req, res, next) {
     const schema = Joi.object({
         token: Joi.string().empty('')
@@ -75,9 +72,9 @@ function revokeToken(req, res, next) {
         .then(() => res.json({ message: 'Token revoked' }))
         .catch(next);
 }
+
 function registerSchema(req, res, next) {
     const schema = Joi.object({
-        title: Joi.string().valid('Mr', 'Mrs', 'Miss').required(),
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         email: Joi.string().email().required(),
@@ -89,9 +86,27 @@ function registerSchema(req, res, next) {
 }
 
 function register(req, res, next) {
-    accountService.register(req.body, req.get('origin'))
-        .then(() => res.json({ message: 'Registration successful, please check your email for verification instructions' }))
-        .catch(next);
+    console.log('Registration request received:', { ...req.body, password: '[REDACTED]' });
+    accountService.register(req.body)
+        .then(user => {
+            console.log('Registration successful:', user);
+            res.json({ 
+                message: 'Registration successful',
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    role: user.role
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Registration failed:', error);
+            res.status(400).json({ 
+                message: error.message || error || 'Registration failed',
+                error: error
+            });
+        });
 }
 
 function verifyEmailSchema(req, res, next) {
@@ -101,6 +116,7 @@ function verifyEmailSchema(req, res, next) {
     });
     validateRequest(req, next, schema);
 }
+
 function verifyEmail(req, res, next) {
     console.log('Processing verify email request with token:', req.body.token);
     accountService.verifyEmail(req.body.token)
@@ -127,6 +143,7 @@ function validateResetTokenSchema(req, res, next) {
     });
     validateRequest(req, next, schema);
 }
+
 function validateResetToken(req, res, next) {
     accountService.validateResetToken(req.body)
         .then(() => res.json({ message: 'Token is valid' }))
@@ -150,76 +167,52 @@ function resetPassword(req, res, next) {
 
 function getAll(req, res, next) {
     accountService.getAll()
-        .then(accounts => res.json(accounts))
+        .then(users => res.json(users))
         .catch(next);
 }
-function getById(req, res, next) {
-    // users can get their own account and admins can get any account
-    if (Number(req.params.id) !== req.user.id && req.user.role !== Role.Admin) {
-        return res.status(401).json({ message: 'Unauthorized' });
-    }
 
+function getById(req, res, next) {
     accountService.getById(req.params.id)
-        .then(account => account ? res.json(account) : res.sendStatus(404))
+        .then(user => res.json(user))
         .catch(next);
 }
 
 function createSchema(req, res, next) {
     const schema = Joi.object({
-        title: Joi.string().valid('Mr', 'Mrs', 'Miss').required(),
-        firstName: Joi.string().required(),
-        lastName: Joi.string().required(),
+        username: Joi.string().required(),
         email: Joi.string().email().required(),
         password: Joi.string().min(6).required(),
         confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
-        role: Joi.string().valid(Role.Admin, Role.User).required(),
-        acceptTerms: Joi.boolean().valid(true).required()
+        role: Joi.string().valid(Role.Admin, Role.User).required()
     });
     validateRequest(req, next, schema);
 }
 
 function create(req, res, next) {
     accountService.create(req.body)
-        .then(account => res.json(account))
+        .then(user => res.json(user))
         .catch(next);
 }
+
 function updateSchema(req, res, next) {
-    const schemaRules = {
-        title: Joi.string().empty(''),
-        firstName: Joi.string().empty(''),
-        lastName: Joi.string().empty(''),
+    const schema = Joi.object({
+        username: Joi.string().empty(''),
         email: Joi.string().email().empty(''),
         password: Joi.string().min(6).empty(''),
         confirmPassword: Joi.string().valid(Joi.ref('password')).empty('')
-    };
-
-    // only admins can update role
-    if (req.user.role === Role.Admin) {
-        schemaRules.role = Joi.string().valid(Role.Admin, Role.User).empty('');
-    }
-
-    const schema = Joi.object(schemaRules).with('password', 'confirmPassword');
+    }).with('password', 'confirmPassword');
     validateRequest(req, next, schema);
 }
 
 function update(req, res, next) {
-    // users can update their own account and admins can update any account
-    if (Number(req.params.id) !== req.user.id && req.user.role !== Role.Admin) {
-        return res.status(401).json({ message: 'Unauthorized' });
-    }
-
     accountService.update(req.params.id, req.body)
-        .then(account => res.json(account))
+        .then(user => res.json(user))
         .catch(next);
 }
-function _delete(req, res, next) {
-    // users can delete their own account and admins can delete any account
-    if (Number(req.params.id) !== req.user.id && req.user.role !== Role.Admin) {
-        return res.status(401).json({ message: 'Unauthorized' });
-    }
 
+function _delete(req, res, next) {
     accountService.delete(req.params.id)
-        .then(() => res.json({ message: 'Account deleted successfully' }))
+        .then(() => res.json({ message: 'User deleted successfully' }))
         .catch(next);
 }
 

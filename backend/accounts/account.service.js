@@ -1,11 +1,11 @@
-const config = require('../config.json');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { Op } = require('sequelize');
-const sendEmail = require('../_helpers/send-email');
-const db = require('../_helpers/db');
+const db = require('../config/database');
 const Role = require('../_helpers/role');
+const config = require('../config.json');
+const sendEmail = require('../_helpers/send-email');
 
 module.exports = {
     authenticate,
@@ -23,91 +23,202 @@ module.exports = {
     delete: _delete
 };
 
-async function authenticate({ email, password, ipAddress }) {
-    const account = await db.Account.scope('withHash').findOne({ where: { email } });
+async function authenticate({ email, password }) {
+    console.log('Authentication attempt for email:', email);
+    
+    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    const user = users[0];
 
-    if (!account || !account.isVerified || !bcrypt.compareSync(password, account.passwordHash)) {
+    if (!user) {
+        console.log('No user found with email:', email);
         throw 'Email or password is incorrect';
     }
 
-    // authentication successful so generate jwt and refresh tokens
-    const jwtToken = generateJwtToken(account);
-    const refreshToken = await generateRefreshToken(account, ipAddress);
+    const passwordMatch = password === user.password;
+    console.log('Password match result:', passwordMatch);
+    
+    if (!passwordMatch) {
+        console.log('Password does not match for user:', email);
+        throw 'Email or password is incorrect';
+    }
 
-    // save refresh token
-    await refreshToken.save();
+    // Check if user is active (admin users are always considered active)
+    if (!user.is_active && user.role !== Role.Admin) {
+        console.log('User account is not active:', email);
+        throw 'Your account is not active. Please contact the administrator.';
+    }
 
-    // return basic details and tokens
-    return { ...basicDetails(account), jwtToken, refreshToken: refreshToken.token };
+    console.log('Authentication successful for user:', email);
+    
+    // authentication successful so generate jwt token
+    const jwtToken = generateJwtToken(user);
+
+    // return basic details and token
+    return {
+        ...basicDetails(user),
+        jwtToken
+    };
 }
-async function refreshToken({ token, ipAddress }) {
-    const refreshToken = await getRefreshToken(token);
-    const account = await refreshToken.getAccount();
 
-    // replace old revoked token with a new one and save
+async function refreshToken({ token, ipAddress }) {
+    const [tokens] = await db.query(
+        'SELECT t.*, a.* FROM refreshTokens t JOIN accounts a ON t.accountId = a.id WHERE t.token = ?',
+        [token]
+    );
+    const refreshToken = tokens[0];
+
+    if (!refreshToken || !refreshToken.isActive) {
+        throw 'Invalid token';
+    }
+
+    const account = {
+        id: refreshToken.accountId,
+        role: refreshToken.role
+    };
+
+    // replace old refresh token with a new one
     const newRefreshToken = generateRefreshToken(account, ipAddress);
     refreshToken.revoked = Date.now();
     refreshToken.revokedByIp = ipAddress;
     refreshToken.replacedByToken = newRefreshToken.token;
-    await refreshToken.save();
-    await newRefreshToken.save();
+
+    await db.query(
+        'UPDATE refreshTokens SET revoked = ?, revokedByIp = ?, replacedByToken = ? WHERE id = ?',
+        [refreshToken.revoked, refreshToken.revokedByIp, refreshToken.replacedByToken, refreshToken.id]
+    );
+
+    await db.query(
+        'INSERT INTO refreshTokens (token, accountId, expires, created, createdByIp) VALUES (?, ?, ?, NOW(), ?)',
+        [newRefreshToken.token, account.id, newRefreshToken.expires, ipAddress]
+    );
 
     // generate new jwt
     const jwtToken = generateJwtToken(account);
 
     // return basic details and tokens
-    return { ...basicDetails(account), jwtToken, refreshToken: newRefreshToken.token };
+    return {
+        ...basicDetails(account),
+        jwtToken,
+        refreshToken: newRefreshToken.token
+    };
 }
+
 async function revokeToken({ token, ipAddress }) {
-    const refreshToken = await getRefreshToken(token);
+    const [tokens] = await db.query('SELECT * FROM refreshTokens WHERE token = ?', [token]);
+    const refreshToken = tokens[0];
+
+    if (!refreshToken || !refreshToken.isActive) {
+        throw 'Invalid token';
+    }
 
     // revoke token and save
     refreshToken.revoked = Date.now();
     refreshToken.revokedByIp = ipAddress;
-    await refreshToken.save();
+
+    await db.query(
+        'UPDATE refreshTokens SET revoked = ?, revokedByIp = ? WHERE id = ?',
+        [refreshToken.revoked, refreshToken.revokedByIp, refreshToken.id]
+    );
 }
-async function register(params, origin) {
-    // validate
-    if (await db.Account.findOne({ where: { email: params.email } })) {
-        // send already registered error in email to prevent account enumeration
-        return await sendAlreadyRegisteredEmail(params.email, origin);
+
+async function register(params) {
+    console.log('=== Registration Process Started ===');
+    console.log('Registration attempt with params:', { 
+        firstName: params.firstName,
+        lastName: params.lastName,
+        email: params.email,
+        password: '[REDACTED]'
+    });
+    
+    try {
+        // validate
+        console.log('Checking for existing users with email:', params.email);
+        const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [params.email]);
+        console.log('Existing users check result:', existingUsers);
+        
+        if (existingUsers.length > 0) {
+            console.log('Registration failed: Email already exists');
+            throw 'Email "' + params.email + '" is already registered';
+        }
+
+        // create user object
+        const user = {
+            username: params.firstName.toLowerCase() + params.lastName.toLowerCase(),
+            email: params.email,
+            password: params.password,
+            role: Role.User,
+            is_active: true, // Set new users as active by default
+            created_at: new Date(),
+            updated_at: new Date()
+        };
+        console.log('Created user object:', { 
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            is_active: user.is_active,
+            created_at: user.created_at,
+            updated_at: user.updated_at
+        });
+
+        // save user
+        console.log('Attempting to insert user into database...');
+        const [result] = await db.query(
+            'INSERT INTO users (username, email, password, role, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [user.username, user.email, user.password, user.role, user.is_active, user.created_at, user.updated_at]
+        );
+        console.log('Database insert result:', result);
+        
+        if (!result || !result.insertId) {
+            throw 'Failed to insert user into database';
+        }
+        
+        user.id = result.insertId;
+        console.log('User registered successfully with ID:', user.id);
+
+        // Verify the user was actually inserted
+        const [verifyUsers] = await db.query('SELECT * FROM users WHERE id = ?', [user.id]);
+        console.log('Verification query result:', verifyUsers);
+
+        if (verifyUsers.length === 0) {
+            throw 'User was not properly saved to the database';
+        }
+
+        // After user is inserted and before returning success
+        const [allUsers] = await db.query('SELECT * FROM users');
+        console.log('All users in database after registration:', allUsers);
+
+        console.log('=== Registration Process Completed Successfully ===');
+        return {
+            ...basicDetails(user),
+            message: 'User successfully registered and saved to database'
+        };
+    } catch (error) {
+        console.error('Registration error:', error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            throw 'Username or email is already taken';
+        }
+        throw error;
     }
-
-    // create account object
-    const account = new db.Account(params);
-
-    // first registered account is an admin
-    const isFirstAccount = (await db.Account.count()) === 0;
-    account.role = isFirstAccount ? Role.Admin : Role.User;
-    account.verificationToken = randomTokenString();
-
-    // hash password
-    account.passwordHash = await hash(params.password);
-
-    // save account
-    await account.save();
-
-    // send email
-    await sendVerificationEmail(account, origin);
 }
+
 async function verifyEmail(token) {
-    console.log('Verifying token:', token);
-    const account = await db.Account.findOne({ where: { verificationToken: token } });
-    console.log('Found account:', account ? account.id : 'not found');
+    const [accounts] = await db.query('SELECT * FROM accounts WHERE verificationToken = ?', [token]);
+    const account = accounts[0];
 
-    if (!account) {
-        console.log('Verification failed - account not found');
-        throw 'Verification failed';
-    }
+    if (!account) throw 'Verification failed';
 
     account.verified = Date.now();
     account.verificationToken = null;
-    await account.save();
-    console.log('Account verified successfully');
+
+    await db.query(
+        'UPDATE accounts SET verified = ?, verificationToken = ? WHERE id = ?',
+        [account.verified, account.verificationToken, account.id]
+    );
 }
 
-async function forgotPassword(email, origin) {
-    const account = await db.Account.findOne({ where: { email } });
+async function forgotPassword({ email }, origin) {
+    const [accounts] = await db.query('SELECT * FROM accounts WHERE email = ?', [email]);
+    const account = accounts[0];
 
     // always return ok response to prevent email enumeration
     if (!account) return;
@@ -115,125 +226,140 @@ async function forgotPassword(email, origin) {
     // create reset token that expires after 24 hours
     account.resetToken = randomTokenString();
     account.resetTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await account.save();
+
+    await db.query(
+        'UPDATE accounts SET resetToken = ?, resetTokenExpires = ? WHERE id = ?',
+        [account.resetToken, account.resetTokenExpires, account.id]
+    );
 
     // send email
     await sendPasswordResetEmail(account, origin);
 }
+
 async function validateResetToken({ token }) {
-    const account = await db.Account.findOne({
-        where: {
-            resetToken: token,
-            resetTokenExpires: { [Op.gt]: Date.now() }
-        }
-    });
+    const [accounts] = await db.query(
+        'SELECT * FROM accounts WHERE resetToken = ? AND resetTokenExpires > NOW()',
+        [token]
+    );
+    const account = accounts[0];
 
-    if (!account) throw 'Invalid token';
-
-    return account;
+    if (!account) {
+        throw 'Invalid token';
+    }
 }
 
 async function resetPassword({ token, password }) {
-    const account = await validateResetToken({ token });
+    const [accounts] = await db.query(
+        'SELECT * FROM accounts WHERE resetToken = ? AND resetTokenExpires > NOW()',
+        [token]
+    );
+    const account = accounts[0];
+
+    if (!account) {
+        throw 'Invalid token';
+    }
 
     // update password and remove reset token
-    account.passwordHash = await hash(password);
+    account.passwordHash = password;
     account.passwordReset = Date.now();
     account.resetToken = null;
-    await account.save();
+    account.resetTokenExpires = null;
+
+    await db.query(
+        'UPDATE accounts SET passwordHash = ?, passwordReset = ?, resetToken = ?, resetTokenExpires = ? WHERE id = ?',
+        [account.passwordHash, account.passwordReset, account.resetToken, account.resetTokenExpires, account.id]
+    );
 }
+
 async function getAll() {
-    const accounts = await db.Account.findAll();
-    return accounts.map(x => basicDetails(x));
+    const [users] = await db.query('SELECT * FROM users');
+    return users.map(user => basicDetails(user));
 }
 
 async function getById(id) {
-    const account = await getAccount(id);
-    return basicDetails(account);
+    const [users] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
+    const user = users[0];
+    if (!user) throw 'User not found';
+    return basicDetails(user);
 }
 
 async function create(params) {
     // validate
-    if (await db.Account.findOne({ where: { email: params.email } })) {
-        throw `Email '${params.email}' is already registered`;
+    const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [params.email]);
+    if (existingUsers.length > 0) {
+        throw 'Email "' + params.email + '" is already registered';
     }
 
-    const account = new db.Account(params);
-    account.verified = Date.now(); // Mark account as verified on creation (adjust as needed)
+    const user = {
+        username: params.username,
+        email: params.email,
+        password: params.password,
+        role: params.role,
+        is_active: params.role === Role.Admin, // Set active if admin
+        created_at: new Date(),
+        updated_at: new Date()
+    };
 
-    // hash password
-    account.passwordHash = await hash(params.password);
+    const [result] = await db.query(
+        'INSERT INTO users (username, email, password, role, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [user.username, user.email, user.password, user.role, user.is_active, user.created_at, user.updated_at]
+    );
+    user.id = result.insertId;
 
-    // save account
-    await account.save();
-
-    return basicDetails(account);
+    return basicDetails(user);
 }
+
 async function update(id, params) {
-    const account = await getAccount(id);
+    const user = await getById(id);
 
-    // validate (if email was changed)
-    if (params.email && account.email !== params.email && await db.Account.findOne({ where: { email: params.email } })) {
-        throw `Email '${params.email}' is already taken`;
+    // validate
+    if (params.email && user.email !== params.email) {
+        const [existingUsers] = await db.query('SELECT * FROM users WHERE email = ?', [params.email]);
+        if (existingUsers.length > 0) {
+            throw 'Email "' + params.email + '" is already taken';
+        }
     }
 
-    // hash password if it was entered
-    if (params.password) {
-        params.passwordHash = await hash(params.password);
-    }
+    // copy params to user and save
+    Object.assign(user, params);
+    user.updated_at = new Date();
 
-    // copy params to account and save
-    Object.assign(account, params);
-    account.updated = Date.now();
-    await account.save();
+    await db.query(
+        'UPDATE users SET username = ?, email = ?, password = ?, role = ?, is_active = ?, updated_at = ? WHERE id = ?',
+        [user.username, user.email, user.password, user.role, user.is_active, user.updated_at, id]
+    );
 
-    return basicDetails(account);
+    return basicDetails(user);
 }
 
 async function _delete(id) {
-    const account = await getAccount(id);
-    await account.destroy();
+    await db.query('DELETE FROM users WHERE id = ?', [id]);
 }
+
 // helper functions
 
-async function getAccount(id) {
-    const account = await db.Account.findByPk(id);
-    if (!account) throw 'Account not found';
-    return account;
+function basicDetails(user) {
+    const { id, username, email, role, is_active } = user;
+    return { id, username, email, role, is_active };
 }
 
-async function getRefreshToken(token) {
-    const refreshToken = await db.RefreshToken.findOne({ where: { token } });
-    if (!refreshToken || !refreshToken.isActive) throw 'Invalid token';
-    return refreshToken;
+function generateJwtToken(user) {
+    // create a jwt token containing the user id and role
+    return jwt.sign({ sub: user.id, role: user.role }, config.secret, { expiresIn: '15m' });
 }
 
-async function hash(password) {
-    return await bcrypt.hash(password, 10);
-}
-
-function generateJwtToken(account) {
-    // create a jwt token containing the account id that expires in 15 minutes
-    return jwt.sign({ sub: account.id, id: account.id }, config.secret, { expiresIn: '15m' });
-}
 function generateRefreshToken(account, ipAddress) {
     // create a refresh token that expires in 7 days
-    return new db.RefreshToken({
-        accountId: account.id,
+    return {
         token: randomTokenString(),
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        createdByIp: ipAddress
-    });
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    };
 }
 
 function randomTokenString() {
     return crypto.randomBytes(40).toString('hex');
 }
 
-function basicDetails(account) {
-    const { id, firstName, lastName, email, role, created, updated, isVerified } = account;
-    return { id, firstName, lastName, email, role, created, updated, isVerified };
-}
 async function sendVerificationEmail(account, origin) {
     let message;
     if (origin) {
@@ -253,22 +379,7 @@ async function sendVerificationEmail(account, origin) {
                ${message}`
     });
 }
-async function sendAlreadyRegisteredEmail(email, origin) {
-    let message;
-    if (origin) {
-        message = `<p>If you don't know your password please visit the <a href="${origin}/account/forgot-password">forgot password</a> page.</p>`;
-    } else {
-        message = `<p>If you don't know your password you can reset it via the <code>/account/forgot-password</code> api route.</p>`;
-    }
 
-    await sendEmail({
-        to: email,
-        subject: 'Sign-up Verification API - Email Already Registered',
-        html: `<h4>Email Already Registered</h4>
-               <p>Your email <strong>${email}</strong> is already registered.</p>
-               ${message}`
-    });
-}
 async function sendPasswordResetEmail(account, origin) {
     let message;
     if (origin) {

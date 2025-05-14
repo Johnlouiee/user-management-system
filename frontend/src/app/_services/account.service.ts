@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map, finalize } from 'rxjs/operators';
+import { map, finalize, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { Account } from '../_models/account';
@@ -18,7 +19,9 @@ export class AccountService {
         private router: Router,
         private http: HttpClient
     ) {
-        this.accountSubject = new BehaviorSubject<Account | null>(null);
+        // Initialize account from localStorage if available
+        const storedAccount = localStorage.getItem('user');
+        this.accountSubject = new BehaviorSubject<Account | null>(storedAccount ? JSON.parse(storedAccount) : null);
         this.account = this.accountSubject.asObservable();
     }
 
@@ -29,6 +32,8 @@ export class AccountService {
     login(email: string, password: string) {
         return this.http.post<any>(`${baseUrl}/authenticate`, { email, password }, { withCredentials: true })
             .pipe(map(account => {
+                // Store account details and jwt token in local storage
+                localStorage.setItem('user', JSON.stringify(account));
                 this.accountSubject.next(account);
                 this.startRefreshTokenTimer();
                 return account;
@@ -38,6 +43,8 @@ export class AccountService {
     logout() {
         this.http.post<any>(`${baseUrl}/revoke-token`, {}, { withCredentials: true }).subscribe();
         this.stopRefreshTokenTimer();
+        // Remove account from local storage
+        localStorage.removeItem('user');
         this.accountSubject.next(null);
         this.router.navigate(['/account/login']);
     }
@@ -45,14 +52,30 @@ export class AccountService {
     refreshToken() {
         return this.http.post<any>(`${baseUrl}/refresh-token`, {}, { withCredentials: true })
             .pipe(map(account => {
+                // Update stored account
+                localStorage.setItem('user', JSON.stringify(account));
                 this.accountSubject.next(account);
                 this.startRefreshTokenTimer();
                 return account;
             }));
     }
 
-    register(account: Account) {
-        return this.http.post(`${baseUrl}/register`, account);
+    register(user: any): Observable<any> {
+        console.log('Sending registration request:', { ...user, password: '[REDACTED]' });
+        return this.http.post(`${environment.apiUrl}/accounts/register`, user)
+            .pipe(
+                map(response => {
+                    console.log('Registration response:', response);
+                    return response;
+                }),
+                catchError(error => {
+                    console.error('Registration error:', error);
+                    if (error.error) {
+                        console.error('Error details:', error.error);
+                    }
+                    throw error;
+                })
+            );
     }
 
     verifyEmail(token: string) {

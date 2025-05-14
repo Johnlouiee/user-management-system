@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router'; // Import Router
+import { AccountService } from '../_services/account.service';
 
 @Component({
   selector: 'app-login',
@@ -15,23 +16,25 @@ export class LoginComponent {
   message: string = '';
 
   // Inject the Router service into the constructor
-  constructor(private fb: FormBuilder, private router: Router) { 
-    this.loginForm = this.fb.group({
-      email: ['', Validators.required],
-      password: ['', Validators.required]
-    });
-  }
+  constructor(
+    private accountService: AccountService,
+    private router: Router
+  ) {}
 
   onSubmit() {
-    if (this.loginForm.valid) {
-      this.message = `Login Successful: ${JSON.stringify(this.loginForm.value)}`;
-    } else {
-      this.message = 'Form is invalid!';
-    }
-  }
+    this.submitted = true;
+    if (this.loginForm.invalid) return;
 
-  // Method to navigate to the Sign Up page
-  navigateToSignUp() {
-    this.router.navigate(['/sign-up']); // Now it uses the injected router
+    this.loading = true;
+    this.accountService.login(this.f.email.value, this.f.password.value)
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/']);
+        },
+        error: error => {
+          this.message = error;
+          this.loading = false;
+        }
+      });
   }
 }
